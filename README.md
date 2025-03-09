@@ -1,6 +1,44 @@
 # Camera-Based Security System Development Plan
 
-## 1. Core Requirements
+## Project Status
+
+### Completed Features
+1. **Infrastructure Setup**
+   - Docker-based development environment with:
+     - PostgreSQL database (port 5432)
+     - Redis cache (port 6379)
+     - FastAPI backend (port 8000)
+   - Next.js frontend (port 3000)
+   - Database migrations using Alembic
+
+2. **Backend Implementation**
+   - FastAPI application structure
+   - Database models and schemas:
+     - Camera management (CRUD operations)
+     - System settings management
+   - Async database operations with SQLAlchemy
+   - API endpoints for:
+     - `/api/v1/cameras` - Camera management
+     - `/api/v1/settings` - System settings
+
+3. **Frontend Implementation**
+   - Next.js project setup
+   - Basic routing structure
+   - Initial UI components
+
+### In Progress
+1. **Camera Integration**
+   - RTSP stream handling
+   - WebRTC implementation
+   - Motion detection setup
+
+### Pending Features
+1. **Object Detection**
+2. **Video Storage**
+3. **Analytics**
+4. **Mobile App**
+
+## Core Requirements
 
 ### Backend Requirements
 
@@ -20,7 +58,7 @@
 - User-friendly and aesthetically pleasing interface
 - Mobile app (eventually) to provide alerts and remote access
 
-## 2. Technology Stack
+## Technology Stack
 
 ### Backend
 
@@ -39,86 +77,94 @@
 - **Live Stream Handling:** WebRTC, HLS (MSE-compatible browsers)
 - **Mobile App (Future):** Swift (iOS) or React Native
 
-## 3. Development Phases
+## Development Phases
 
-### Phase 1: Base Streaming & Viewing
-
-- **Backend:**
-  - Set up FastAPI-based backend
-  - Integrate OpenCV/GStreamer to process RTSP streams
-  - Provide an API to access live streams
-- **Frontend:**
-  - Create a basic React dashboard
-  - Implement live stream viewing functionality
-  - Display multiple camera feeds in a grid
+### Phase 1: Base Streaming & Viewing _(In Progress)_
+- [x] Set up FastAPI-based backend
+- [x] Set up database and migrations
+- [x] Create basic React dashboard
+- [ ] Integrate OpenCV/GStreamer for RTSP streams
+- [ ] Implement live stream viewing functionality
+- [ ] Display multiple camera feeds in a grid
 
 ### Phase 2: Motion Detection & Alerts
-
-- **Backend:**
-  - Implement motion detection using OpenCV (frame differencing)
-  - Store motion events in the database
-  - Provide an API to fetch motion events
-- **Frontend:**
-  - Display motion event alerts in real-time
-  - Highlight detected motion on the video feed
-  - Create a simple event history list
+- [ ] Implement motion detection using OpenCV
+- [ ] Store motion events in the database
+- [ ] Provide an API to fetch motion events
+- [ ] Display motion event alerts in real-time
+- [ ] Highlight detected motion on the video feed
+- [ ] Create a simple event history list
 
 ### Phase 3: Object Detection & Categorization
-
-- **Backend:**
-  - Integrate YOLOv8 or MobileNet-SSD for object detection
-  - Store detected objects with metadata (type, timestamp)
-  - Provide an API for categorized object retrieval
-- **Frontend:**
-  - Display detected objects in the UI
-  - Implement filtering by object type (people, animals, vehicles)
-  - Allow users to view clips based on detected objects
+- [ ] Integrate YOLOv8 or MobileNet-SSD
+- [ ] Store detected objects with metadata
+- [ ] Provide API for categorized object retrieval
+- [ ] Display detected objects in the UI
+- [ ] Implement filtering by object type
+- [ ] Allow viewing clips based on detected objects
 
 ### Phase 4: Object Tracking & Re-Identification
-
-- **Backend:**
-  - Implement tracking to recognize recurring people/vehicles
-  - Store unique objects and create self-labeled categories
-  - Provide API for retrieving categorized appearances
-- **Frontend:**
-  - Display recurring people/objects in a dedicated UI section
-  - Provide search and filtering for tracked objects
-  - Enable users to manually label or correct object categories
+- [ ] Implement tracking for recurring objects
+- [ ] Store unique objects and create categories
+- [ ] Provide API for categorized appearances
+- [ ] Display recurring objects in UI
+- [ ] Enable manual object labeling
+- [ ] Search and filter tracked objects
 
 ### Phase 5: Web UI Enhancements & Analytics
-
-- **Backend:**
-  - Store additional analytics data (heatmaps, frequency of events)
-  - Optimize storage and retrieval of recorded clips
-  - Provide advanced search capabilities
-- **Frontend:**
-  - Add data visualization (heatmaps, object frequency charts)
-  - Implement an intuitive search and filtering system
-  - Improve UI aesthetics and user experience
+- [ ] Store analytics data
+- [ ] Optimize storage and retrieval
+- [ ] Add data visualization
+- [ ] Implement advanced search
+- [ ] Improve UI aesthetics
 
 ### Phase 6: Mobile App Development
+- [ ] Implement push notifications
+- [ ] Optimize API for mobile
+- [ ] Develop mobile app
+- [ ] Enable clip playback
+- [ ] Add mobile alerts
 
-- **Backend:**
-  - Implement push notifications for motion alerts
-  - Optimize API performance for mobile access
-- **Frontend:**
-  - Develop a Swift/React Native mobile app
-  - Support live viewing and event-based alerts
-  - Allow clip playback and object search on mobile
+## Getting Started
 
-## 4. Optimization Considerations
+### Prerequisites
+- Docker and Docker Compose
+- Node.js 18+ (for frontend development)
+- Python 3.11+ (for local development)
 
-- Use **GStreamer** for efficient RTSP handling
-- Leverage **CUDA/TensorRT** for faster object detection
-- Implement **async event processing (FastAPI + Redis)**
-- Use **H.265 encoding** to reduce storage needs
-- Optimize frontend with **lazy-loading video streams**
+### Development Setup
+1. Clone the repository
+2. Start the backend services:
+   ```bash
+   docker compose up -d
+   ```
+3. Start the frontend development server:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
 
-## 5. Next Steps
+### API Documentation
+- Swagger UI: http://localhost:8000/docs
+- ReDoc: http://localhost:8000/redoc
 
-- Decide between **YOLOv8 vs. MobileNet-SSD** for object detection
-- Choose a **streaming implementation (WebRTC vs. MJPEG vs. HLS)**
-- Prioritize **UI aesthetics and user experience early on**
+### Database Management
+- Migrations are handled with Alembic
+- To create a new migration:
+  ```bash
+  docker compose exec backend alembic revision --autogenerate -m "Description"
+  ```
+- To apply migrations:
+  ```bash
+  docker compose exec backend alembic upgrade head
+  ```
+
+## Next Steps
+1. Implement RTSP stream handling
+2. Set up WebRTC for real-time streaming
+3. Create camera feed grid view
+4. Implement motion detection
 
 ---
 

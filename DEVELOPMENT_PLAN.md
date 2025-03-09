@@ -25,25 +25,28 @@
    - Set up .gitignore and basic version control
 
 ### In Progress 🚧
-1. Camera Integration Layer (Phase 1.2)
-   - [ ] Camera management system
-   - [ ] RTSP connection manager
-   - [ ] Stream buffer management
+1. Frontend Basic Setup (Phase 2.1)
+   - [ ] Initialize Next.js project
+   - [ ] Set up TailwindCSS
+   - [ ] Create basic layout components
+   - [ ] Implement camera grid view
+   - [ ] Add basic camera configuration UI
 
 ### Next Steps 📋
-1. Complete Camera Integration Layer
+1. Complete Basic Frontend
+   - Set up development environment
+   - Create responsive layout
+   - Implement basic camera management interface
+
+2. Begin Camera Integration Layer
    - Implement camera configuration model
    - Set up RTSP connection handling
-   - Develop stream management system
-
-2. Begin Media Gateway Implementation
-   - Set up WebRTC server
-   - Implement signaling system
-   - Create stream conversion pipeline
+   - Create basic stream viewing
 
 ### Backlog 📝
-- Frontend development (Phase 2)
-- Advanced features (Phase 3)
+- Advanced frontend features
+- Media Gateway Implementation
+- Advanced camera features
 - Testing implementation
 - Documentation
 - Production deployment setup
@@ -57,20 +60,21 @@
   ├── backend/
   │   ├── app/
   │   │   ├── api/           # FastAPI routes
-  │   │   ├── core/          # Core application logic
-  │   │   ├── models/        # Data models
-  │   │   ├── services/      # Business logic
-  │   │   └── utils/         # Utility functions
-  │   ├── tests/
-  │   ├── requirements.txt
-  │   └── docker-compose.yml
-  └── frontend/
-      ├── src/
-      │   ├── components/    # React components
-      │   ├── services/      # API clients
-      │   └── utils/         # Frontend utilities
-      ├── public/
-      └── package.json
+  │   │   │   ├── core/          # Core application logic
+  │   │   │   ├── models/        # Data models
+  │   │   │   ├── services/      # Business logic
+  │   │   │   └── utils/         # Utility functions
+  │   │   ├── tests/
+  │   │   ├── requirements.txt
+  │   │   └── docker-compose.yml
+  │   └── frontend/
+  │       ├── src/
+  │       │   ├── components/    # React components
+  │       │   ├── services/      # API clients
+  │       │   └── utils/         # Frontend utilities
+  │       ├── public/
+  │       └── package.json
+  └── docker-compose.yml
   ```
 - Set up development environment
   - Docker configuration
@@ -116,7 +120,7 @@
 - Storage management
   - Local storage configuration
   - Volume mounting support
-  - Storage rotation policies
+  - Configurable retention policies
 - Recording service
   - Continuous recording
   - Motion-based recording
