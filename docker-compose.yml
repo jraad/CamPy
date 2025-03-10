@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    ports:
+      - "80:80"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/campy
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  rtsp:
+    build:
+      context: .
+      dockerfile: docker/rtsp/Dockerfile
+    environment:
+      - ENVIRONMENT=production
+      - GST_DEBUG=1
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+  motion:
+    build:
+      context: .
+      dockerfile: docker/motion/Dockerfile
+    environment:
+      - ENVIRONMENT=production
+      - OPENCV_LOG_LEVEL=WARNING
+    restart: unless-stopped
+    depends_on:
+      - rtsp
+
+  recording:
+    build:
+      context: .
+      dockerfile: docker/recording/Dockerfile
+    volumes:
+      - recordings:/app/recordings
+    environment:
+      - ENVIRONMENT=production
+    restart: unless-stopped
+    depends_on:
+      - motion
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=campy
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  recordings: 

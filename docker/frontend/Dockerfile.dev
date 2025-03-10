@@ -1,0 +1,6 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Add development dependencies here if needed
+CMD ["npm", "start"] 
