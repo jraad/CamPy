@@ -1,172 +1,136 @@
-# Camera-Based Security System Development Plan
+# **Python NVR Development Plan**
 
-## Project Status
+## **📌 High-Level Architecture Diagram**
+```plaintext
++-------------------------------------+
+|            Web UI (React)           |
+|   - View Live Streams               |
+|   - Configure Cameras & Settings    |
+|   - Browse & Playback Recordings    |
++------------------+------------------+
+                   |
+                   v
++-------------------------------------+
+|           FastAPI Backend           |
+|  - API Gateway for all services     |
+|  - Serves UI                        |
+|  - Handles authentication (optional)|
++------------------+------------------+
+                   |
++-------------------------------------+
+|     RTSP Stream Handler (GStreamer) |
+|  - Fetch & process RTSP streams     |
+|  - Serve live feeds via WebSockets  |
+|  - Extract frames for motion detection |
++------------------+------------------+
+                   |
++-------------------------------------+
+|      Motion Detection Service       |
+|  - Analyze frames using OpenCV/AI   |
+|  - Detect & classify motion events  |
+|  - Send event triggers to DB/API    |
++------------------+------------------+
+                   |
++-------------------------------------+
+|      Recording & Storage Service    |
+|  - Store videos (MP4/H.264)         |
+|  - Manage retention policies        |
+|  - Enable playback via API          |
++------------------+------------------+
+                   |
++-------------------------------------+
+|       PostgreSQL (Database)         |
+|  - Store camera configurations      |
+|  - Log motion events                |
+|  - Manage recording metadata        |
++-------------------------------------+
+```
 
-### Completed Features
-1. **Infrastructure Setup**
-   - Docker-based development environment with:
-     - PostgreSQL database (port 5432)
-     - Redis cache (port 6379)
-     - FastAPI backend (port 8000)
-   - Next.js frontend (port 3000)
-   - Database migrations using Alembic
+## **📌 Step-by-Step Development Plan**
 
-2. **Backend Implementation**
-   - FastAPI application structure
-   - Database models and schemas:
-     - Camera management (CRUD operations)
-     - System settings management
-   - Async database operations with SQLAlchemy
-   - API endpoints for:
-     - `/api/v1/cameras` - Camera management
-     - `/api/v1/settings` - System settings
+### **🚀 Phase 1: RTSP Stream Handling & Live Viewing**
+🔹 **Goal:** Set up GStreamer-based RTSP streaming and serve it in a Web UI.
 
-3. **Frontend Implementation**
-   - Next.js project setup
-   - Basic routing structure
-   - Initial UI components
+#### **Step 1: Set Up a GStreamer RTSP Pipeline**
+1. Install GStreamer and necessary plugins.
+2. Test the RTSP stream from a camera using GStreamer CLI.
+3. Convert RTSP to MJPEG or HLS for browser compatibility.
 
-### In Progress
-1. **Camera Integration**
-   - RTSP stream handling
-   - WebRTC implementation
-   - Motion detection setup
+#### **Step 2: Implement RTSP Streaming in Python**
+1. Create a Python service using GStreamer to fetch RTSP streams.
+2. Ensure auto-reconnect and buffering optimization.
+3. Integrate WebSockets or HTTP streaming for live video.
 
-### Pending Features
-1. **Object Detection**
-2. **Video Storage**
-3. **Analytics**
-4. **Mobile App**
+#### **Step 3: Create a FastAPI Backend to Serve Streams**
+1. Set up FastAPI as the main backend service.
+2. Develop an endpoint to serve live video streams.
+3. Implement WebSockets for real-time streaming.
 
-## Core Requirements
-
-### Backend Requirements
-
-- Support multiple RTSP POE cameras with efficient streaming
-- Implement motion detection with minimal performance impact
-- Object detection (people, animals, vehicles, etc.)
-- Identify recurring objects (e.g., same person appearing multiple times)
-- Efficient storage and retrieval of recorded footage
-- Provide an API for frontend communication (RESTful/FastAPI)
-- Scalable and optimized for real-time performance
-
-### Frontend Requirements
-
-- Web UI to view live streams from cameras
-- Display motion detection events and categorized objects
-- Allow searching and filtering recorded footage
-- User-friendly and aesthetically pleasing interface
-- Mobile app (eventually) to provide alerts and remote access
-
-## Technology Stack
-
-### Backend
-
-- **Language:** Python
-- **Streaming Handling:** OpenCV, GStreamer, FFmpeg
-- **Motion Detection:** OpenCV frame differencing, background subtraction
-- **Object Detection:** YOLOv8 (Ultralytics) or MobileNet-SSD
-- **Web API:** FastAPI (async, high-performance)
-- **Database:** PostgreSQL + TimescaleDB (optimized for time-series data)
-- **Storage:** Local filesystem or cloud (AWS S3, MinIO)
-- **Message Queue:** Redis/Kafka for event handling
-
-### Frontend
-
-- **Web UI:** React (Next.js) + TailwindCSS
-- **Live Stream Handling:** WebRTC, HLS (MSE-compatible browsers)
-- **Mobile App (Future):** Swift (iOS) or React Native
-
-## Development Phases
-
-### Phase 1: Base Streaming & Viewing _(In Progress)_
-- [x] Set up FastAPI-based backend
-- [x] Set up database and migrations
-- [x] Create basic React dashboard
-- [ ] Integrate OpenCV/GStreamer for RTSP streams
-- [ ] Implement live stream viewing functionality
-- [ ] Display multiple camera feeds in a grid
-
-### Phase 2: Motion Detection & Alerts
-- [ ] Implement motion detection using OpenCV
-- [ ] Store motion events in the database
-- [ ] Provide an API to fetch motion events
-- [ ] Display motion event alerts in real-time
-- [ ] Highlight detected motion on the video feed
-- [ ] Create a simple event history list
-
-### Phase 3: Object Detection & Categorization
-- [ ] Integrate YOLOv8 or MobileNet-SSD
-- [ ] Store detected objects with metadata
-- [ ] Provide API for categorized object retrieval
-- [ ] Display detected objects in the UI
-- [ ] Implement filtering by object type
-- [ ] Allow viewing clips based on detected objects
-
-### Phase 4: Object Tracking & Re-Identification
-- [ ] Implement tracking for recurring objects
-- [ ] Store unique objects and create categories
-- [ ] Provide API for categorized appearances
-- [ ] Display recurring objects in UI
-- [ ] Enable manual object labeling
-- [ ] Search and filter tracked objects
-
-### Phase 5: Web UI Enhancements & Analytics
-- [ ] Store analytics data
-- [ ] Optimize storage and retrieval
-- [ ] Add data visualization
-- [ ] Implement advanced search
-- [ ] Improve UI aesthetics
-
-### Phase 6: Mobile App Development
-- [ ] Implement push notifications
-- [ ] Optimize API for mobile
-- [ ] Develop mobile app
-- [ ] Enable clip playback
-- [ ] Add mobile alerts
-
-## Getting Started
-
-### Prerequisites
-- Docker and Docker Compose
-- Node.js 18+ (for frontend development)
-- Python 3.11+ (for local development)
-
-### Development Setup
-1. Clone the repository
-2. Start the backend services:
-   ```bash
-   docker compose up -d
-   ```
-3. Start the frontend development server:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-### API Documentation
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
-
-### Database Management
-- Migrations are handled with Alembic
-- To create a new migration:
-  ```bash
-  docker compose exec backend alembic revision --autogenerate -m "Description"
-  ```
-- To apply migrations:
-  ```bash
-  docker compose exec backend alembic upgrade head
-  ```
-
-## Next Steps
-1. Implement RTSP stream handling
-2. Set up WebRTC for real-time streaming
-3. Create camera feed grid view
-4. Implement motion detection
+#### **Step 4: Build a Simple React Web UI**
+1. Use `react-player` or `video.js` for streaming.
+2. Create a dashboard to view live camera feeds.
+3. Connect the frontend to FastAPI for fetching streams.
 
 ---
 
-This plan ensures backend and frontend development proceed in parallel, allowing for continuous testing and usability improvements. Let me know if you'd like to adjust any priorities!
+### **📌 Phase 2: Motion Detection & Event Handling**
+🔹 **Goal:** Implement real-time motion detection and event logging.
 
+#### **Step 5: Extract Frames from GStreamer**
+1. Modify the pipeline to send frames to OpenCV.
+2. Implement an efficient frame buffer.
+
+#### **Step 6: Implement Motion Detection with OpenCV**
+1. Use background subtraction or AI-based motion detection.
+2. Tune sensitivity and filtering to reduce false positives.
+
+#### **Step 7: Send Motion Events to the API**
+1. Implement an API endpoint to log motion events.
+2. Store events in a database with timestamps and camera IDs.
+
+---
+
+### **📌 Phase 3: Video Recording & Storage**
+🔹 **Goal:** Record video clips based on motion events.
+
+#### **Step 8: Set Up Video Recording in GStreamer**
+1. Configure pipelines for event-based and continuous recording.
+2. Optimize encoding settings for performance and storage.
+
+#### **Step 9: Implement Motion-Triggered Recording**
+1. Trigger recording when motion is detected.
+2. Save video files with timestamp-based naming.
+
+#### **Step 10: Store Event Metadata in PostgreSQL**
+1. Design a schema for motion events and recording logs.
+2. Implement database queries to fetch event-based recordings.
+
+---
+
+### **📌 Phase 4: Configuration, UI & Optimization**
+🔹 **Goal:** Make the system configurable & optimize performance.
+
+#### **Step 11: Add API for Camera Configuration**
+1. Create database tables for camera configurations.
+2. Develop a FastAPI CRUD API for managing cameras.
+
+#### **Step 12: Improve Web UI**
+1. Add configuration options for motion detection and recording.
+2. Implement event logs and recording playback.
+
+#### **Step 13: Optimize for Performance**
+1. Enable GPU acceleration for encoding and processing.
+2. Implement auto-reconnect on RTSP stream failure.
+3. Optimize storage with retention policies.
+
+---
+
+### **Final Steps**
+✅ **Test each module separately.**  
+✅ **Deploy using Docker for modularity.**  
+✅ **Implement authentication and security.**  
+
+## **🎯 Next Steps**
+- Start with **Phase 1: RTSP Stream Handling** and build iteratively.
+- Test and refine motion detection before moving to recording.
+- Continuously improve and optimize based on testing feedback.
