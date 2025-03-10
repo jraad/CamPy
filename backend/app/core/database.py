@@ -9,7 +9,7 @@ load_dotenv()
 # Database URL from environment variable or default to SQLite for development
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql+asyncpg://postgres:postgres@localhost:5432/campy"
+    "postgresql+asyncpg://postgres:postgres@db:5432/campy"
 )
 
 # Create async engine

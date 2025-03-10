@@ -1,12 +1,20 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
+import cv2
+import asyncio
+from pydantic import BaseModel
 
 from ..schemas.camera import Camera, CameraCreate, CameraUpdate
 from ..services.camera_service import CameraService
 from ..core.database import get_db
 
 router = APIRouter()
+
+class TestConnectionRequest(BaseModel):
+    rtsp_url: str
+    username: str | None = None
+    password: str | None = None
 
 async def get_camera_service(db: AsyncSession = Depends(get_db)) -> CameraService:
     return CameraService(db)
@@ -38,4 +46,41 @@ async def delete_camera(camera_id: str, camera_service: CameraService = Depends(
     success = await camera_service.delete_camera(camera_id)
     if not success:
         raise HTTPException(status_code=404, detail="Camera not found")
-    return {"status": "success"} 
+    return {"status": "success"}
+
+@router.post("/cameras/test-connection")
+async def test_connection(request: TestConnectionRequest):
+    """Test RTSP stream connection."""
+    try:
+        # Build RTSP URL with credentials if provided
+        url = request.rtsp_url
+        if request.username and request.password:
+            # Insert credentials into URL
+            protocol, rest = url.split("://", 1)
+            url = f"{protocol}://{request.username}:{request.password}@{rest}"
+
+        # Try to open the stream
+        cap = cv2.VideoCapture(url)
+        
+        # Try to read a frame with a timeout
+        success = False
+        try:
+            # Run frame capture in a separate thread with timeout
+            loop = asyncio.get_event_loop()
+            success = await loop.run_in_executor(None, cap.read)[0]
+        finally:
+            cap.release()
+
+        if not success:
+            raise HTTPException(
+                status_code=400,
+                detail="Could not connect to camera stream"
+            )
+
+        return {"status": "success"}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to connect to camera: {str(e)}"
+        ) 
