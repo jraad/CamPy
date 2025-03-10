@@ -13,35 +13,37 @@ services:
   #   environment:
   #     - NEXT_PUBLIC_API_URL=http://localhost:8000
   #   depends_on:
-  #     - backend
+  #     - mediamtx
+  #   networks:
+  #     - campy_network
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
-      - ./storage:/app/storage
     environment:
-      - POSTGRES_SERVER=db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=campy
-      - REDIS_HOST=redis
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/campy
     depends_on:
       - db
-      - redis
+    networks:
+      - campy_network
 
   db:
-    image: postgres:15
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: campy
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=campy
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - campy_network
 
   redis:
     image: redis:7
@@ -49,6 +51,26 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - campy_network
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    ports:
+      - "8554:8554/tcp"  # RTSP
+      - "8888:8888/tcp"  # API
+      - "8889:8889/tcp"  # WebRTC
+      - "8083:8083/tcp"  # HLS
+      - "8189:8189/udp"  # WebRTC UDP
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml
+    restart: unless-stopped
+    networks:
+      - campy_network
+
+networks:
+  campy_network:
+    driver: bridge
 
 volumes:
   postgres_data:
