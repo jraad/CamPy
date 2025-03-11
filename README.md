@@ -1,136 +1,120 @@
-# **Python NVR Development Plan**
+# CamPy RTSP Streaming Application
 
-## **📌 High-Level Architecture Diagram**
-```plaintext
-+-------------------------------------+
-|            Web UI (React)           |
-|   - View Live Streams               |
-|   - Configure Cameras & Settings    |
-|   - Browse & Playback Recordings    |
-+------------------+------------------+
-                   |
-                   v
-+-------------------------------------+
-|           FastAPI Backend           |
-|  - API Gateway for all services     |
-|  - Serves UI                        |
-|  - Handles authentication (optional)|
-+------------------+------------------+
-                   |
-+-------------------------------------+
-|     RTSP Stream Handler (GStreamer) |
-|  - Fetch & process RTSP streams     |
-|  - Serve live feeds via WebSockets  |
-|  - Extract frames for motion detection |
-+------------------+------------------+
-                   |
-+-------------------------------------+
-|      Motion Detection Service       |
-|  - Analyze frames using OpenCV/AI   |
-|  - Detect & classify motion events  |
-|  - Send event triggers to DB/API    |
-+------------------+------------------+
-                   |
-+-------------------------------------+
-|      Recording & Storage Service    |
-|  - Store videos (MP4/H.264)         |
-|  - Manage retention policies        |
-|  - Enable playback via API          |
-+------------------+------------------+
-                   |
-+-------------------------------------+
-|       PostgreSQL (Database)         |
-|  - Store camera configurations      |
-|  - Log motion events                |
-|  - Manage recording metadata        |
-+-------------------------------------+
+A modern web application for viewing RTSP video streams using FastAPI and React.
+
+## Project Structure
+
+```
+CamPy/
+├── backend/           # Python FastAPI backend
+│   ├── app/
+│   │   ├── main.py   # FastAPI application
+│   │   ├── routes/   # API endpoints
+│   │   └── services/ # Business logic
+│   ├── Dockerfile
+│   └── requirements.txt
+├── frontend/         # React TypeScript frontend
+│   ├── src/
+│   │   ├── components/
+│   │   └── App.tsx
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── package.json
+└── docker-compose.yml
 ```
 
-## **📌 Step-by-Step Development Plan**
+## Prerequisites
 
-### **🚀 Phase 1: RTSP Stream Handling & Live Viewing**
-🔹 **Goal:** Set up GStreamer-based RTSP streaming and serve it in a Web UI.
+- Docker and Docker Compose
+- An RTSP stream source (camera, video server, etc.)
 
-#### **Step 1: Set Up a GStreamer RTSP Pipeline**
-1. Install GStreamer and necessary plugins.
-2. Test the RTSP stream from a camera using GStreamer CLI.
-3. Convert RTSP to MJPEG or HLS for browser compatibility.
+## Quick Start with Docker
 
-#### **Step 2: Implement RTSP Streaming in Python**
-1. Create a Python service using GStreamer to fetch RTSP streams.
-2. Ensure auto-reconnect and buffering optimization.
-3. Integrate WebSockets or HTTP streaming for live video.
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd CamPy
+   ```
 
-#### **Step 3: Create a FastAPI Backend to Serve Streams**
-1. Set up FastAPI as the main backend service.
-2. Develop an endpoint to serve live video streams.
-3. Implement WebSockets for real-time streaming.
+2. Start the application using Docker Compose:
+   ```bash
+   docker-compose up --build
+   ```
 
-#### **Step 4: Build a Simple React Web UI**
-1. Use `react-player` or `video.js` for streaming.
-2. Create a dashboard to view live camera feeds.
-3. Connect the frontend to FastAPI for fetching streams.
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Documentation: http://localhost:8000/docs
 
----
+To stop the application:
+```bash
+docker-compose down
+```
 
-### **📌 Phase 2: Motion Detection & Event Handling**
-🔹 **Goal:** Implement real-time motion detection and event logging.
+## Manual Setup (Development)
 
-#### **Step 5: Extract Frames from GStreamer**
-1. Modify the pipeline to send frames to OpenCV.
-2. Implement an efficient frame buffer.
+If you prefer to run the application without Docker, follow these steps:
 
-#### **Step 6: Implement Motion Detection with OpenCV**
-1. Use background subtraction or AI-based motion detection.
-2. Tune sensitivity and filtering to reduce false positives.
+### Backend Setup
 
-#### **Step 7: Send Motion Events to the API**
-1. Implement an API endpoint to log motion events.
-2. Store events in a database with timestamps and camera IDs.
+1. Create and activate a virtual environment (optional but recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
----
+2. Install backend dependencies:
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
 
-### **📌 Phase 3: Video Recording & Storage**
-🔹 **Goal:** Record video clips based on motion events.
+3. Start the backend server:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-#### **Step 8: Set Up Video Recording in GStreamer**
-1. Configure pipelines for event-based and continuous recording.
-2. Optimize encoding settings for performance and storage.
+### Frontend Setup
 
-#### **Step 9: Implement Motion-Triggered Recording**
-1. Trigger recording when motion is detected.
-2. Save video files with timestamp-based naming.
+1. Install frontend dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-#### **Step 10: Store Event Metadata in PostgreSQL**
-1. Design a schema for motion events and recording logs.
-2. Implement database queries to fetch event-based recordings.
+2. Start the frontend development server:
+   ```bash
+   npm start
+   ```
 
----
+## Usage
 
-### **📌 Phase 4: Configuration, UI & Optimization**
-🔹 **Goal:** Make the system configurable & optimize performance.
+1. Open your web browser and navigate to `http://localhost:3000`
+2. Enter your RTSP URL in the input field (e.g., `rtsp://username:password@camera-ip:554/stream1`)
+3. Click "Connect" to start viewing the stream
+4. Click "Disconnect" to stop the stream
 
-#### **Step 11: Add API for Camera Configuration**
-1. Create database tables for camera configurations.
-2. Develop a FastAPI CRUD API for managing cameras.
+## API Endpoints
 
-#### **Step 12: Improve Web UI**
-1. Add configuration options for motion detection and recording.
-2. Implement event logs and recording playback.
+- `POST /api/stream/connect` - Connect to an RTSP stream
+- `GET /api/stream/stream/{rtsp_url}` - Get the video stream
+- `POST /api/stream/disconnect/{rtsp_url}` - Disconnect from the stream
 
-#### **Step 13: Optimize for Performance**
-1. Enable GPU acceleration for encoding and processing.
-2. Implement auto-reconnect on RTSP stream failure.
-3. Optimize storage with retention policies.
+## Development
 
----
+- Backend API documentation is available at `http://localhost:8000/docs`
+- The frontend is built with React and TypeScript for type safety
+- The backend uses FastAPI for high-performance async operations
+- Video streaming is handled using OpenCV and PyAV for efficient processing
 
-### **Final Steps**
-✅ **Test each module separately.**  
-✅ **Deploy using Docker for modularity.**  
-✅ **Implement authentication and security.**  
+## Security Considerations
 
-## **🎯 Next Steps**
-- Start with **Phase 1: RTSP Stream Handling** and build iteratively.
-- Test and refine motion detection before moving to recording.
-- Continuously improve and optimize based on testing feedback.
+- The current setup allows all CORS origins for development
+- In production, configure CORS to allow only specific origins
+- Consider implementing authentication for the API
+- Secure RTSP credentials should be handled carefully
+- Use HTTPS in production
+
+## License
+
+MIT
