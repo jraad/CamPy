@@ -49,6 +49,11 @@ RUN apt-get update && apt-get install -y \
     gstreamer1.0-plugins-bad \
     gstreamer1.0-plugins-ugly \
     python3-gst-1.0 \
+    x11-utils \
+    libx11-6 \
+    libxext6 \
+    libxtst6 \
+    libxv1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy wheels from builder
